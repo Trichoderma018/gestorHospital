@@ -3,13 +3,13 @@ from .models import Pacientes, Doctores, Citas, Especialidades, DoctoresEspecial
 from django.contrib.auth.models import User
 from .serializers import PacientesSerializer, DoctoresSerializer, CitasSerializer, EspecialidadesSerializer, DoctoresEspecialidadesSerializer
 from rest_framework.permissions import BasePermission, IsAuthenticated
-
+"""
 # Modelo usuario
 class UserListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
+"""
 # Permisos
 class IsAdminUserGroup(BasePermission):
     def has_permission(self, request, view):
