@@ -1,5 +1,9 @@
 from django.db import models
 
+#class User(models.Model):
+#como hago para usar el model User de django.contrib.auth.models?
+# o tengo que crear un nuevo modelo?
+
 class Pacientes(models.Model):
     GENERO_CHOICES = [
         ('M', 'Masculino'),
