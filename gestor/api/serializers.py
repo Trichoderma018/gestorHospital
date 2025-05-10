@@ -1,27 +1,93 @@
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError # Se le da otro nombre para evitar confusiones porque hay otra función que se llama igual pero hace otra cosa
 from .models import Pacientes, Doctores, Especialidades, Citas, DoctoresEspecialidades
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
 #Serializers de me modelos creados por Django
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    password_confirm = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'email': {'required': True}
+        }
 
     def validate_username(self, value):
         if len(value.strip()) < 3:
             raise serializers.ValidationError("El nombre de usuario debe tener al menos 3 caracteres.")
+
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Este nombre de usuario ya está en uso.")
         return value
     
     def validate_email(self, value):
         if not '@' in value:
             raise serializers.ValidationError("El correo electrónico no es válido.")
+
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Este correo electrónico ya está en uso.")
         return value
-    
+
+    def validate(self, data):
+        # Verificar que las contraseñas coincidan
+        if data.get('password') != data.get('password_confirm'):
+            raise serializers.ValidationError({"password_confirm": "Las contraseñas no coinciden."})
+        return data
+
     def validate_password(self, value):
         if len(value) < 8:
             raise serializers.ValidationError("La contraseña debe tener al menos 8 caracteres.")
+        try:
+            # Validación del sistema Django que utiliza los validadores configurados en settings.py
+            validate_password(value)
+        except DjangoValidationError as e:
+            # Convierte los errores de Django a errores del serializador
+            raise serializers.ValidationError(list(e.messages))
+        
         return value
+
+    def create(self, validated_data):
+        # Eliminar password_confirm ya que no es un campo del modelo User
+        validated_data.pop('password_confirm')
+        
+        # Guardar la contraseña para usarla después
+        password = validated_data.pop('password')
+        
+        # Crear el usuario sin la contraseña
+        user = User.objects.create(**validated_data)
+        
+        # Establecer la contraseña con el método seguro que aplica el hashing
+        user.set_password(password)
+
+        cliente_group, created = Group.objects.get_or_create(name='doctor')
+        user.groups.add(cliente_group)
+
+        user.save()
+        
+        return user
+
+
+    def update(self, instance, validated_data):
+        # Eliminar password_confirm ya que no es un campo del modelo User
+        if 'password_confirm' in validated_data:
+            validated_data.pop('password_confirm')
+        
+        # Extraer la contraseña si existe
+        if 'password' in validated_data:
+            password = validated_data.pop('password')
+            # Aplicar el hashing a la nueva contraseña
+            instance.set_password(password)
+        
+        # Actualizar los demás campos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 # Serializers de Modelos creados por el desarrollador
 class PacientesSerializer(serializers.ModelSerializer):

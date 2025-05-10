@@ -1,8 +1,8 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .models import Pacientes, Doctores, Citas, Especialidades, DoctoresEspecialidades
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .serializers import PacientesSerializer, DoctoresSerializer, CitasSerializer, EspecialidadesSerializer, DoctoresEspecialidadesSerializer, UserSerializer
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated, AllowAny
 
 # Permisos
 class IsAdminUserGroup(BasePermission):
@@ -14,6 +14,12 @@ class IsAdminUserGroup(BasePermission):
 
 # Modelo usuario
 class UserListCreateView(ListCreateAPIView):
+    permission_classes = [AllowAny]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetailView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUserGroup, IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
