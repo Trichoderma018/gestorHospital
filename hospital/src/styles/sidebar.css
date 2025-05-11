@@ -1,0 +1,17 @@
+.sidebar{
+    width: 150px;
+    height: 100vh;
+    background-color: bisque;
+    color: black;
+    padding: 20px;
+}
+.sidebar ul{
+    list-style-type: none;
+    padding: auto;
+}
+.sidebar ul li{
+    padding: 15px;
+}
+.sidebar ul li:hover{
+    background-color: lightblue;
+}
