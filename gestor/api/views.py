@@ -36,7 +36,7 @@ class PacientesDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = PacientesSerializer
 
 class DoctoresListCreateView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUserGroup, IsAuthenticated]
     queryset = Doctores.objects.all()
     serializer_class = DoctoresSerializer
 
