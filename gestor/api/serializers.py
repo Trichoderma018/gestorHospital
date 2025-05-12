@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 #Serializers de me modelos creados por Django
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    #password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     password_confirm = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     class Meta:
         model = User
